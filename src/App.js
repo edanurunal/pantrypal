@@ -11,6 +11,9 @@ function App() {
   const [expiry, setExpiry] = useState("");
   const [quickExpiry, setQuickExpiry] = useState("");
   const [search, setSearch] = useState("");
+  const [recipes, setRecipes] = useState(null);
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [recipeErr, setRecipeErr] = useState("");
 
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem("pantryItems");
@@ -90,15 +93,38 @@ function App() {
     localStorage.setItem("shoppingList", JSON.stringify(updated));
   };
 
+  const getRecipes = async () => {
+    if (items.length === 0) { setRecipeErr("No items in your pantry!"); return; }
+    setLoadingRecipes(true);
+    setRecipes(null);
+    setRecipeErr("");
+    try {
+      const ingredients = items.map(i => i.name).join(", ");
+      const res = await fetch("http://localhost:3001/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ingredients }),
+      });
+      const data = await res.json();
+      if (data.error) { setRecipeErr(data.error); return; }
+      const parsed = JSON.parse(data.recipes);
+      setRecipes(parsed.recipes);
+    } catch (e) {
+      setRecipeErr("Could not connect to server. Is the backend running?");
+    } finally {
+      setLoadingRecipes(false);
+    }
+  };
+
   return (
     <div className="app">
-<div className="header">
-  <Logo />
-  <div className="header-text">
-    <h1>PantryPal</h1>
-    <p>Track your food, reduce waste</p>
-  </div>
-</div>
+      <div className="header">
+        <Logo />
+        <div className="header-text">
+          <h1>PantryPal</h1>
+          <p>Track your food, reduce waste</p>
+        </div>
+      </div>
 
       <div className="form-card">
         <h2>Add Item</h2>
@@ -211,6 +237,31 @@ function App() {
           ))
         )}
       </div>
+
+      <div style={{marginTop:40,textAlign:"center"}}>
+        <button
+          onClick={getRecipes}
+          disabled={loadingRecipes}
+          className="add-btn"
+          style={{fontSize:16,padding:"14px 32px"}}
+        >
+          {loadingRecipes ? "Finding recipes..." : "🍳 What can I cook?"}
+        </button>
+        {recipeErr && <p style={{color:"#e55353",marginTop:12}}>{recipeErr}</p>}
+      </div>
+
+      {recipes && (
+        <div style={{marginTop:32,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,padding:"0 16px 40px"}}>
+          {recipes.map((r,i) => (
+            <div key={i} className="form-card">
+              <div style={{fontSize:20,marginBottom:8}}>🍽️</div>
+              <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>{r.title}</div>
+              <div style={{fontSize:13,color:"#888",marginBottom:12,lineHeight:1.5}}>{r.description}</div>
+              <div style={{fontSize:12,color:"#40b37c"}}>⏱ {r.prepTime}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
