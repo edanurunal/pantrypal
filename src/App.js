@@ -1,3 +1,4 @@
+import Logo from './components/Logo';
 import { useState } from "react";
 import "./App.css";
 import { getItemEmoji, CATEGORY_ICONS } from "./utils/emojiMapping";
@@ -91,12 +92,13 @@ function App() {
 
   return (
     <div className="app">
-      <div className="header">
-        <div className="header-text">
-          <h1>🥦 PantryPal</h1>
-          <p>Track your food, reduce waste</p>
-        </div>
-      </div>
+<div className="header">
+  <Logo />
+  <div className="header-text">
+    <h1>PantryPal</h1>
+    <p>Track your food, reduce waste</p>
+  </div>
+</div>
 
       <div className="form-card">
         <h2>Add Item</h2>
