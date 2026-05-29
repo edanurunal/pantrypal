@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { getItemEmoji, CATEGORY_ICONS } from "./utils/emojiMapping";
 import SearchBar from "./search";
+import ExpiredItems from './expiredItems';
 
 function App() {
   const [name, setName] = useState("");
@@ -10,20 +11,17 @@ function App() {
   const [quickExpiry, setQuickExpiry] = useState("");
   const [search, setSearch] = useState("");
 
-  // Pantry Items State
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem("pantryItems");
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Shopping List States
   const [shoppingList, setShoppingList] = useState(() => {
     const saved = localStorage.getItem("shoppingList");
     return saved ? JSON.parse(saved) : [];
   });
   const [shoppingItem, setShoppingItem] = useState('');
 
-  // Expiry Warning Color Logic
   const getColor = (expiry) => {
     const today = new Date();
     const expiryDate = new Date(expiry);
@@ -33,7 +31,6 @@ function App() {
     return '#40b37c';
   };
 
-  // Expiry Text Label Generator
   const getExpiryLabel = (expiry) => {
     const today = new Date();
     const expiryDate = new Date(expiry);
@@ -47,26 +44,16 @@ function App() {
   const addItem = () => {
     if (!name) return;
     let finalExpiry = expiry;
-
     if (!finalExpiry && quickExpiry) {
       const date = new Date();
       date.setDate(date.getDate() + parseInt(quickExpiry));
       finalExpiry = date.toISOString().split("T")[0];
     }
-
     if (!finalExpiry) return;
-
-    const newItem = {
-      id: Date.now(),
-      name,
-      category,
-      expiry: finalExpiry,
-    };
-
+    const newItem = { id: Date.now(), name, category, expiry: finalExpiry };
     const updated = [...items, newItem];
     setItems(updated);
     localStorage.setItem("pantryItems", JSON.stringify(updated));
-
     setName("");
     setCategory("Dairy");
     setExpiry("");
@@ -79,7 +66,6 @@ function App() {
     localStorage.setItem("pantryItems", JSON.stringify(updated));
   };
 
-  // Shopping List Functions
   const addToShopping = (itemName) => {
     const nameToAdd = itemName || shoppingItem;
     if (!nameToAdd) return;
@@ -157,6 +143,8 @@ function App() {
 
       <SearchBar search={search} setSearch={setSearch} />
 
+      <ExpiredItems items={items} deleteItem={deleteItem} />
+
       <div className="categories-grid">
         {Object.entries(
           [...items]
@@ -192,7 +180,6 @@ function App() {
         ))}
       </div>
 
-      {/* Shopping List Section */}
       <div className="shopping-card">
         <h2>🛒 Shopping List</h2>
         <div className="shopping-form">
