@@ -1,12 +1,14 @@
 import { useState } from "react";
 import "./App.css";
 import { getItemEmoji, CATEGORY_ICONS } from "./utils/emojiMapping";
+import SearchBar from "./search";
 
 function App() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Dairy");
   const [expiry, setExpiry] = useState("");
   const [quickExpiry, setQuickExpiry] = useState("");
+  const [search, setSearch] = useState("");
 
   // Pantry Items State
   const [items, setItems] = useState(() => {
@@ -153,11 +155,14 @@ function App() {
         <button className="add-btn" onClick={addItem}>+ Add to Pantry</button>
       </div>
 
+      <SearchBar search={search} setSearch={setSearch} />
+
       <div className="categories-grid">
         {Object.entries(
           [...items]
             .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
             .filter(i => new Date(i.expiry) >= new Date())
+            .filter(i => i.name.toLowerCase().includes(search.toLowerCase()))
             .reduce((groups, item) => {
               const currentCat = item.category || "Grains & Pantry";
               if (!groups[currentCat]) groups[currentCat] = [];
@@ -187,7 +192,7 @@ function App() {
         ))}
       </div>
 
-      {/* Shopping List Section Component */}
+      {/* Shopping List Section */}
       <div className="shopping-card">
         <h2>🛒 Shopping List</h2>
         <div className="shopping-form">
